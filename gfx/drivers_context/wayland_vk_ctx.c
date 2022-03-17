@@ -515,6 +515,7 @@ static void *gfx_ctx_wl_init(void *video_driver)
 
    wl_display_roundtrip(wl->input.dpy);
    xdg_wm_base_add_listener(wl->xdg_shell, &xdg_shell_listener, NULL);
+   wl_display_roundtrip(wl->input.dpy);
 
    /* Bind SHM based wl_buffer to wl_surface until the vulkan surface is ready.
     * This shows the window which assigns us a display (wl_output)
