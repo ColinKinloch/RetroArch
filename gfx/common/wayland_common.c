@@ -82,6 +82,7 @@ void xdg_toplevel_handle_configure_common(gfx_ctx_wayland_data_t *wl,
 
    wl->width  = width  > 0 ? width  : DEFAULT_WINDOWED_WIDTH;
    wl->height = height > 0 ? height : DEFAULT_WINDOWED_HEIGHT;
+   RARCH_LOG(" --- xdg_toplevel_handle_configure_common - %d,%d - wl(%d,%d)\n", width, height, wl->width, wl->height);
 }
 
 void xdg_toplevel_handle_close(void *data,
@@ -128,9 +129,12 @@ void libdecor_frame_handle_configure_common(struct libdecor_frame *frame,
    if (!wl->libdecor_configuration_get_content_size(configuration, frame,
          &width, &height))
    {
+      RARCH_LOG(" --- content_size fail\n");
       width  = wl->floating_width;
       height = wl->floating_height;
    }
+
+   RARCH_LOG(" --- libdecor_frame_handle_configure_common - content_size(%d,%d) - %d,%d\n", width, height, wl->width, wl->height);
 
    if (     width  > 0
          && height > 0)
@@ -140,6 +144,7 @@ void libdecor_frame_handle_configure_common(struct libdecor_frame *frame,
    }
 
    state = wl->libdecor_state_new(wl->width, wl->height);
+   RARCH_LOG(" --- libdecor_frame_handle_configure_common - state,wl(%d,%d) - wlf(%d,%d)\n", wl->width, wl->height, wl->floating_width, wl->floating_height);
    wl->libdecor_frame_commit(frame, state, configuration);
    wl->libdecor_state_free(state);
 
@@ -651,14 +656,30 @@ bool gfx_ctx_wl_set_video_mode_common_size(gfx_ctx_wayland_data_t *wl,
 
    wl_surface_set_buffer_scale(wl->surface, wl->buffer_scale);
 
+   wl_surface_commit(wl->surface);
+   struct libdecor_state *state = wl->libdecor_state_new(wl->width, wl->height);
+   wl->libdecor_frame_commit(wl->libdecor_frame, state, NULL);
+   wl_surface_commit(wl->surface);
+   wl->libdecor_dispatch(wl->libdecor_context, 10);
+
+   if (!draw_splash_screen(wl))
+      RARCH_ERR("[Wayland]: Failed to draw splash screen\n");
+
+   wl_surface_commit(wl->surface);
+   wl->libdecor_dispatch(wl->libdecor_context, 10);
+
 #ifdef HAVE_LIBDECOR_H
    if (wl->libdecor)
    {
-     struct libdecor_state *state = wl->libdecor_state_new(width, height);
+     RARCH_LOG(" --- gfx_ctx_wl_set_video_mode_common_size - state(%d,%d) - wl(%d,%d) - wlf(%d,%d)\n", width, height, wl->width, wl->height, wl->floating_width, wl->floating_height);
+     struct libdecor_state *state = wl->libdecor_state_new(wl->width, wl->height);
      wl->libdecor_frame_commit(wl->libdecor_frame, state, NULL);
      wl->libdecor_state_free(state);
    }
 #endif
+
+   wl_surface_commit(wl->surface);
+   wl->libdecor_dispatch(wl->libdecor_context, 10);
 
    return true;
 }
@@ -703,6 +724,8 @@ bool gfx_ctx_wl_set_video_mode_common_fullscreen(gfx_ctx_wayland_data_t *wl,
          xdg_toplevel_set_fullscreen(wl->xdg_toplevel, output);
       }
    }
+
+   wl_surface_commit(wl->surface);
 
    flush_wayland_fd(&wl->input);
 

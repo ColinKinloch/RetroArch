@@ -93,6 +93,8 @@ static bool gfx_ctx_wl_set_resize(void *data, unsigned width, unsigned height)
 {
    gfx_ctx_wayland_data_t *wl = (gfx_ctx_wayland_data_t*)data;
 
+   RARCH_LOG(" --- gfx_ctx_wl_set_resize %d,%d\n", width, height);
+
    if (vulkan_create_swapchain(&wl->vk, width, height, wl->swap_interval))
    {
       wl->vk.context.invalid_swapchain = true;

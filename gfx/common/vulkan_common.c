@@ -2866,6 +2866,8 @@ bool vulkan_create_swapchain(gfx_ctx_vulkan_data_t *vk,
    VkCompositeAlphaFlagBitsKHR composite   = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
    bool vsync                              = settings->bools.video_vsync;
 
+   RARCH_LOG(" --- vulkan_create_swapchain %d,%d\n", width, height);
+
    vkDeviceWaitIdle(vk->context.device);
    vulkan_acquire_clear_fences(vk);
 
